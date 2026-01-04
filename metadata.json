@@ -1,0 +1,7 @@
+{
+  "name": "Kelechi's Pro Invoice",
+  "description": "A professional invoice generator and dashboard for developers, featuring intelligent content generation using Gemini.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
