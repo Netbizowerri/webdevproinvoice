@@ -44,8 +44,18 @@ const Dashboard: React.FC<DashboardProps> = ({ invoices, user }) => {
     const pendingAmount = totalBilled - totalEarned;
     const paidCount = invoices.filter(inv => inv.status === 'paid').length;
     const pendingCount = invoices.length - paidCount;
+    const successRate = invoices.length > 0 ? Math.round((paidCount / invoices.length) * 100) : 0;
 
-    return { totalEarned, pendingAmount, totalBilled, paidCount, pendingCount };
+    const lastMonth = new Date().getMonth() - 1;
+    const currentMonthEarned = invoices.reduce((sum, inv) => 
+      sum + inv.payments.filter(p => new Date(p.date).getMonth() === new Date().getMonth()).reduce((s, p) => s + p.amount, 0), 0
+    );
+    const prevMonthEarned = invoices.reduce((sum, inv) => 
+      sum + inv.payments.filter(p => new Date(p.date).getMonth() === lastMonth).reduce((s, p) => s + p.amount, 0), 0
+    );
+    const trend = prevMonthEarned > 0 ? `${Math.round(((currentMonthEarned - prevMonthEarned) / prevMonthEarned) * 100)}% from last month` : 'No prior data';
+
+    return { totalEarned, pendingAmount, totalBilled, paidCount, pendingCount, successRate, trend };
   }, [invoices]);
 
   const chartData = useMemo(() => {
@@ -102,7 +112,7 @@ const Dashboard: React.FC<DashboardProps> = ({ invoices, user }) => {
           title="Total Earned" 
           value={`₦${stats.totalEarned.toLocaleString()}`} 
           icon={<span className="font-bold text-emerald-600">₦</span>} 
-          trend="+12% from last month"
+          trend={stats.trend}
           color="bg-emerald-50"
         />
         <StatCard 
@@ -116,7 +126,7 @@ const Dashboard: React.FC<DashboardProps> = ({ invoices, user }) => {
           title="Invoices Paid" 
           value={stats.paidCount.toString()} 
           icon={<CheckCircle2 className="text-indigo-600" />} 
-          trend="85% success rate"
+          trend={`${stats.successRate}% success rate`}
           color="bg-indigo-50"
         />
         <StatCard 
@@ -134,7 +144,7 @@ const Dashboard: React.FC<DashboardProps> = ({ invoices, user }) => {
           <div className="flex items-center justify-between mb-6">
             <h3 className="font-bold text-slate-800">Monthly Revenue (₦)</h3>
             <select className="text-sm border-none bg-slate-100 rounded-lg focus:ring-0">
-              <option>Year 2024</option>
+              <option>{`Year ${new Date().getFullYear()}`}</option>
             </select>
           </div>
           <div className="h-72 w-full">

@@ -77,7 +77,7 @@ const InvoiceEditor: React.FC<InvoiceEditorProps> = ({ user, invoices, onSave })
     }));
   };
 
-  const updateItem = (itemId: string, field: keyof InvoiceItem, value: any) => {
+  const updateItem = (itemId: string, field: keyof InvoiceItem, value: string | number) => {
     setInvoice(prev => ({
       ...prev,
       items: prev.items.map(item => item.id === itemId ? { ...item, [field]: value } : item)
@@ -158,10 +158,14 @@ const InvoiceEditor: React.FC<InvoiceEditorProps> = ({ user, invoices, onSave })
   const totalPaid = depositAmount + otherPayments;
   const balance = subtotal - totalPaid;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onSave(invoice);
-    navigate('/invoices');
+    try {
+      await onSave(invoice);
+      navigate('/invoices');
+    } catch (err) {
+      console.error('Failed to save invoice:', err);
+    }
   };
 
   return (

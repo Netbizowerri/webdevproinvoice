@@ -82,7 +82,7 @@ const InvoicePreview: React.FC<InvoicePreviewProps> = ({ invoices, user }) => {
                   {user.website}
                 </a>
               )}
-              <p className="text-slate-400 text-sm">{user.email}</p>
+              {user.email && <p className="text-slate-400 text-sm">{user.email}</p>}
             </div>
           </div>
           <div className="text-right">
