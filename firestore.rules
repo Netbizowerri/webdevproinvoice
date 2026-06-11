@@ -1,42 +1,10 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-
-    // =====================
-    // APP USERS COLLECTION
-    // =====================
     match /app_users/{uid} {
-
-      // Anyone can create their own user record on sign-up
-      allow create: if request.auth != null && request.auth.uid == uid;
-
-      // Users can read their own record; admins can read all
-      allow read: if request.auth != null && (
-        request.auth.uid == uid ||
-        request.auth.token.email == 'netbiz0925@gmail.com' ||
-        get(/databases/$(database)/documents/app_users/$(request.auth.uid)).data.role == 'admin'
-      );
-
-      // Only the super admin (database owner) or the user themselves can update
-      allow update: if request.auth != null && (
-        request.auth.uid == uid ||
-        request.auth.token.email == 'netbiz0925@gmail.com' ||
-        get(/databases/$(database)/documents/app_users/$(request.auth.uid)).data.role == 'admin'
-      );
-
-      // Only admin can delete user records
-      allow delete: if request.auth != null && (
-        request.auth.token.email == 'netbiz0925@gmail.com' ||
-        get(/databases/$(database)/documents/app_users/$(request.auth.uid)).data.role == 'admin'
-      );
+      allow read, write: if request.auth != null;
     }
-
-    // =====================
-    // INVOICES COLLECTION
-    // =====================
     match /invoices/{invoiceId} {
-
-      // Any authenticated user can read, create, update, delete invoices
       allow read, write: if request.auth != null;
     }
   }
