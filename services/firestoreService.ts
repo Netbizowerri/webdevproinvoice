@@ -42,6 +42,8 @@ function fromFirestore(id: string, data: any): Invoice {
   };
 }
 
+const MIGRATED_KEY = 'kelechi_invoices_migrated';
+
 export const firestoreService = {
   async getAll(): Promise<Invoice[]> {
     const q = query(collection(db, COLLECTION), orderBy('issueDate', 'desc'));
@@ -55,6 +57,27 @@ export const firestoreService = {
       const invoices = snapshot.docs.map(d => fromFirestore(d.id, d.data()));
       callback(invoices);
     });
+  },
+
+  async migrateFromLocalStorage(): Promise<number> {
+    const saved = localStorage.getItem('kelechi_invoices');
+    if (!saved) return 0;
+    const alreadyMigrated = localStorage.getItem(MIGRATED_KEY);
+    if (alreadyMigrated) return 0;
+
+    let migrated = 0;
+    try {
+      const localInvoices: Invoice[] = JSON.parse(saved);
+      for (const inv of localInvoices) {
+        await firestoreService.create(inv);
+        migrated++;
+      }
+      localStorage.removeItem('kelechi_invoices');
+      localStorage.setItem(MIGRATED_KEY, 'true');
+    } catch (e) {
+      console.error('Migration failed:', e);
+    }
+    return migrated;
   },
 
   async create(invoice: Invoice): Promise<string> {

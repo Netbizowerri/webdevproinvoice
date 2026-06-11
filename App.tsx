@@ -43,7 +43,13 @@ const AppShell: React.FC = () => {
   const location = useLocation();
 
   React.useEffect(() => {
-    const unsub = firestoreService.onSnapshot((data) => {
+    let migrated = false;
+    const unsub = firestoreService.onSnapshot(async (data) => {
+      if (!migrated && data.length === 0) {
+        const count = await firestoreService.migrateFromLocalStorage();
+        migrated = true;
+        if (count > 0) return;
+      }
       setInvoices(data);
       setInvoicesLoading(false);
     });
